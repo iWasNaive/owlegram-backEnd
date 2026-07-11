@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS `groups` (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    creator_id INT NOT NULL,
+    username VARCHAR(255) UNIQUE,
+    is_private BOOLEAN DEFAULT FALSE,
+    private_link VARCHAR(255),
+    photo VARCHAR(255),
+    bio TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE
+);
