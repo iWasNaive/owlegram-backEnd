@@ -33,6 +33,8 @@ exports.register = async (req, res, next) => {
 
     res.cookie("carrot", token, {
       httpOnly: true,
+      secure: true,
+      sameSite: "none",
     });
 
     return res.status(201).json("کاربر با موفقیت ساخته شد");
@@ -65,6 +67,8 @@ exports.login = async (req, res, next) => {
 
     res.cookie("carrot", token, {
       httpOnly: true,
+      secure: true,
+      sameSite: "none",
     });
 
     return res.status(200).json({ message: "ورود موفقیت آمیز بود" });

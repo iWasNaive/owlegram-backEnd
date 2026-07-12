@@ -1,8 +1,16 @@
 const db = require("./../db");
 
-exports.create = async ({ sender_id, receiver_id, text, media, parent_id }) => {
+exports.create = async ({
+  sender_id,
+  receiver_id,
+  text,
+  media,
+  parent_id,
+  forward_from_id,
+  forward_from_type,
+}) => {
   try {
-    const query = `INSERT INTO pv_messages (sender_id, receiver_id, text, media, parent_id) VALUES (?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO pv_messages (sender_id, receiver_id, text, media, parent_id, forward_from_id, forward_from_type) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
     const [result] = await db.execute(query, [
       sender_id,
@@ -10,6 +18,8 @@ exports.create = async ({ sender_id, receiver_id, text, media, parent_id }) => {
       text,
       media,
       parent_id,
+      forward_from_id,
+      forward_from_type,
     ]);
 
     return true;
@@ -19,28 +29,53 @@ exports.create = async ({ sender_id, receiver_id, text, media, parent_id }) => {
 };
 
 exports.findMessageByBothId = async (senderId, receiverId) => {
-  const query = `SELECT 
-    m.id AS message_id,
-    m.text,
-    m.media,
-    m.parent_id,
-    m.created_at,
-    
-    sender.id AS sender_id,
-    sender.username AS sender_username,
-    sender.profile AS sender_profile,
-    
-    parent_m.text AS reply_to_text, 
-    parent_sender.username AS reply_to_username
+  const query = `
+        SELECT 
+            m.id AS message_id,
+            m.text,
+            m.media,
+            m.parent_id,
+            m.forward_from_type,
+            m.created_at,
+            m.forward_from_id,
+            
+            sender.id AS sender_id,
+            sender.username AS sender_username,
+            sender.profile AS sender_profile,
+            
+            parent_m.text AS reply_to_text,
+            parent_sender.username AS reply_to_username,
+            parent_sender.id AS reply_user_id,
+            
+            forward_user.username AS forward_user_name,
+            forward_channel.name AS forward_channel_name,
 
-FROM pv_messages AS m
-JOIN users AS sender ON m.sender_id = sender.id 
-LEFT JOIN pv_messages AS parent_m ON m.parent_id = parent_m.id
-LEFT JOIN users AS parent_sender ON parent_m.sender_id = parent_sender.id
+(
+        SELECT CONCAT('[', GROUP_CONCAT(JSON_OBJECT('user_id', user_id, 'reaction_type', reaction_type)), ']')
+        FROM pv_reactions 
+        WHERE message_id = m.id
+    ) AS reactions
 
-WHERE (m.sender_id = ? AND m.receiver_id = ?) 
-   OR (m.sender_id = ? AND m.receiver_id = ?)
-ORDER BY m.created_at ASC;`;
+            
+        FROM pv_messages AS m
+        
+        JOIN users AS sender ON m.sender_id = sender.id
+        
+        LEFT JOIN pv_messages AS parent_m ON m.parent_id = parent_m.id
+        LEFT JOIN users AS parent_sender ON parent_m.sender_id = parent_sender.id
+        
+        LEFT JOIN users AS forward_user 
+            ON m.forward_from_id = forward_user.id 
+            AND m.forward_from_type = 'user'
+            
+        LEFT JOIN channels AS forward_channel 
+            ON m.forward_from_id = forward_channel.id 
+            AND m.forward_from_type = 'channel'
+            
+        WHERE (m.sender_id = ? AND m.receiver_id = ?) 
+           OR (m.sender_id = ? AND m.receiver_id = ?)
+        ORDER BY m.created_at ASC
+    `;
 
   const [result] = await db.execute(query, [
     senderId,
@@ -49,7 +84,15 @@ ORDER BY m.created_at ASC;`;
     senderId,
   ]);
 
-  return result;
+  const formattedResult = result.map((msg) => {
+    return {
+      ...msg,
+      // اگه ری‌اکشن داشت پارسش کن، وگرنه یه آرایه خالی بذار
+      reactions: msg.reactions ? JSON.parse(msg.reactions) : [],
+    };
+  });
+
+  return formattedResult;
 };
 
 exports.getContact = async (userId) => {
@@ -86,4 +129,34 @@ ORDER BY last_message_time DESC;`;
   const [result] = await db.execute(query, [userId, userId, userId, userId]);
 
   return result;
+};
+
+exports.deleteMessageById = async (message_id, user_id) => {
+  const query = "DELETE FROM pv_messages WHERE id = ? AND sender_id = ?";
+
+  const [result] = await db.execute(query, [message_id, user_id]);
+
+  if (result.affectedRows > 0) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+exports.deletePv = async (receiver_id, sender_id) => {
+  const query =
+    "DELETE FROM pv_messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)";
+
+  const [result] = await db.execute(query, [
+    receiver_id,
+    sender_id,
+    sender_id,
+    receiver_id,
+  ]);
+
+  if (result.affectedRows > 0) {
+    return true;
+  } else {
+    return false;
+  }
 };

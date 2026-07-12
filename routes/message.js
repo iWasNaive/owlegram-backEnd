@@ -16,4 +16,8 @@ router.route("/get/:pv").get(authGuard, controller.getAll);
 
 router.route("/get-contact").get(authGuard, controller.getContacts);
 
+router.route("/:messageId").delete(authGuard, controller.remove);
+
+router.route("/deletePv/:pv").delete(authGuard, controller.deletePv);
+
 module.exports = router;

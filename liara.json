@@ -1,0 +1,12 @@
+{
+  "disks": [
+    {
+      "name": "profile",
+      "mountTo": "/public/uploads/profiles"
+    },
+    {
+      "name": "post",
+      "mountTo": "/public/uploads/posts"
+    }
+  ]
+}

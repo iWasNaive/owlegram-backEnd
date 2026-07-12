@@ -9,6 +9,7 @@ const { errHandler } = require("./middlewares/errHandler");
 const authRouter = require("./routes/auth");
 const messageRouter = require("./routes/message");
 const userRouter = require("./routes/user");
+const reactionRouter = require("./routes/reaction");
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -26,6 +27,7 @@ app.use(
 app.use("/auth", authRouter);
 app.use("/message", messageRouter);
 app.use("/user", userRouter);
+app.use("/reaction", reactionRouter);
 
 app.use(errHandler);
 

@@ -6,6 +6,20 @@ exports.findUser = async (req, res, next) => {
 
     const user = await User.SearchByUsername(username);
 
-    console.log(user);
-  } catch (error) {}
+    return res.json({ user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.userProfile = async (req, res, next) => {
+  try {
+    const username = req.user.username;
+
+    const user = await User.SearchByUsername(username);
+
+    return res.json({ user });
+  } catch (error) {
+    next(error);
+  }
 };
