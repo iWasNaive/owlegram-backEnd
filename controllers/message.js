@@ -107,6 +107,25 @@ exports.remove = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.edit = async (req, res, next) => {
+  try {
+    const { messageId } = req.params;
+    const { text } = req.body;
+    const userId = req.user.id;
+
+    const result = await Message.updateMessage(text, messageId, userId);
+
+    if (!result) {
+      return res.json(false);
+    }
+
+    return res.json(true);
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.deletePv = async (req, res, next) => {
   try {
     const userId = req.user.id;

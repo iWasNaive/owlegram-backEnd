@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS pv_messages (
     forward_from_id INT,
     forward_from_type ENUM('user', 'channel', 'group'),
     is_read BOOLEAN DEFAULT FALSE,
+    is_edited BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,

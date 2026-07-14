@@ -29,6 +29,14 @@ exports.create = async ({
 };
 
 exports.findMessageByBothId = async (senderId, receiverId) => {
+  const updateQuery = `
+    UPDATE pv_messages 
+    SET is_read = 1 
+    WHERE sender_id = ? AND receiver_id = ? AND is_read = 0
+  `;
+
+  await db.execute(updateQuery, [receiverId, senderId]);
+
   const query = `
         SELECT 
             m.id AS message_id,
@@ -38,6 +46,8 @@ exports.findMessageByBothId = async (senderId, receiverId) => {
             m.forward_from_type,
             m.created_at,
             m.forward_from_id,
+            m.is_edited,
+            m.is_read,
             
             sender.id AS sender_id,
             sender.username AS sender_username,
@@ -157,6 +167,23 @@ exports.deletePv = async (receiver_id, sender_id) => {
   if (result.affectedRows > 0) {
     return true;
   } else {
+    return false;
+  }
+};
+
+exports.updateMessage = async (text, message_id, user_id) => {
+  try {
+    const query =
+      "UPDATE pv_messages SET text= ?, is_edited = true  WHERE id = ? AND sender_id = ?";
+
+    const [result] = await db.execute(query, [text, message_id, user_id]);
+
+    if (result.affectedRows > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
     return false;
   }
 };

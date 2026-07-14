@@ -15,7 +15,7 @@ module.exports = async (req, res, next) => {
       return res.json({ msg: "لطفا دوباره وارد شوید" });
     }
 
-    const user = await User.findByUsername(token.username);
+    const user = await User.findById(token.id);
 
     if (!user) {
       return res.json({ msg: "لطفا دوباره وارد شوید" });

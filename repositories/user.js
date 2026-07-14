@@ -27,3 +27,60 @@ exports.SearchByUsername = async (username) => {
 
   return result[0];
 };
+
+exports.findById = async (id) => {
+  const query = "select * from users where id = ?";
+
+  const [result] = await db.execute(query, [id]);
+
+  return result[0];
+};
+
+exports.updateUsername = async (userId, username) => {
+  try {
+    const query = "UPDATE users SET username = ? WHERE id = ?";
+
+    const [result] = await db.execute(query, [username, userId]);
+
+    if (result.affectedRows > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+exports.updateProfile = async (userId, profile) => {
+  try {
+    const query = "UPDATE users SET profile = ? WHERE id = ?";
+
+    const [result] = await db.execute(query, [profile, userId]);
+
+    if (result.affectedRows > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+exports.removeProfile = async (userId) => {
+  try {
+    const query = "UPDATE users SET profile = NULL WHERE id = ?";
+
+    const [result] = await db.execute(query, [userId]);
+
+    if (result.affectedRows > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    throw error;
+  }
+};
