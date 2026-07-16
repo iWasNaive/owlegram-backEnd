@@ -10,6 +10,7 @@ const authRouter = require("./routes/auth");
 const messageRouter = require("./routes/message");
 const userRouter = require("./routes/user");
 const reactionRouter = require("./routes/reaction");
+const channelRouter = require("./routes/channel");
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -28,6 +29,11 @@ app.use("/auth", authRouter);
 app.use("/message", messageRouter);
 app.use("/user", userRouter);
 app.use("/reaction", reactionRouter);
+app.use("/channel", channelRouter);
+
+const { swaggerUi, specs } = require("./docs/swagger");
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(errHandler);
 
